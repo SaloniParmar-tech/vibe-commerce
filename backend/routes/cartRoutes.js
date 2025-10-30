@@ -1,36 +1,37 @@
-const express = require("express");
+import express from "express";
+import products from "../data.js";
+
 const router = express.Router();
 
 let cart = [];
 
-// Add item to cart
-router.post("/", (req, res) => {
-  const { productId, qty } = req.body;
-  const existingItem = cart.find(item => item.productId === productId);
-  
-  if (existingItem) existingItem.qty += qty;
-  else cart.push({ productId, qty });
-  
-  res.json({ message: "Item added to cart", cart });
+// ✅ Fetch all products
+router.get("/products", (req, res) => {
+  res.json(products);
 });
 
-// Get cart
+// ✅ Get all items in cart
 router.get("/", (req, res) => {
-  const total = cart.reduce((sum, item) => sum + item.qty * 100, 0); // mock total
-  res.json({ cart, total });
+  res.json(cart);
 });
 
-// Delete item
-router.delete("/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  cart = cart.filter(item => item.productId !== id);
-  res.json({ message: "Item removed", cart });
+// ✅ Add product to cart
+router.post("/add", (req, res) => {
+  const { id } = req.body;
+  const product = products.find((p) => p.id === id);
+  if (product) {
+    cart.push(product);
+    res.json({ message: "Product added to cart", cart });
+  } else {
+    res.status(404).json({ message: "Product not found" });
+  }
 });
 
-// Checkout
-router.post("/checkout", (req, res) => {
-  const timestamp = new Date().toLocaleString();
-  res.json({ message: "Checkout successful", total: 1000, timestamp });
+// ✅ Remove product from cart
+router.post("/remove", (req, res) => {
+  const { id } = req.body;
+  cart = cart.filter((p) => p.id !== id);
+  res.json({ message: "Product removed", cart });
 });
 
-module.exports = router;
+export default router;
